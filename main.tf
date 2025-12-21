@@ -291,7 +291,7 @@ resource "google_cloud_run_v2_service" "museum" {
 
       volume_mounts {
         name       = "config-vol"
-        mount_path = "/museum.yaml"
+        mount_path = "/var/config"
       }
     }
   }
