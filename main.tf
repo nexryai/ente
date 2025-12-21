@@ -182,7 +182,7 @@ resource "google_compute_instance" "db_server" {
   }
 
   metadata = {
-    user-data = templatefile("${path.module}/cloud-init.yaml", {
+    user-data = templatefile("${path.module}/cloud-init.yml", {
       db_password = var.db_password
     })
   }
