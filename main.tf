@@ -23,16 +23,34 @@ resource "google_vpc_access_connector" "connector" {
   network       = google_compute_network.vpc.name
 }
 
-resource "google_artifact_registry_repository" "ghcr_proxy" {
+resource "google_artifact_registry_repository" "museum_repo" {
   location      = var.region
-  repository_id = "ghcr-proxy"
+  repository_id = "museum-repo"
   format        = "DOCKER"
-  mode          = "REMOTE_REPOSITORY"
-  remote_repository_config {
-    docker_repository {
-      public_repository = "GITHUB_CONTAINER_REGISTRY"
+  mode          = "STANDARD"
+
+  cleanup_policies {
+    id     = "keep-latest-only"
+    action = "KEEP"
+    most_recent_versions {
+      keep_count = 1 # 最新の1件のみ残す
     }
   }
+
+  cleanup_policies {
+    id     = "delete-old-images"
+    action = "DELETE"
+    condition {
+      tag_state = "ANY"
+    }
+  }
+}
+
+resource "google_artifact_registry_repository_iam_member" "pusher" {
+  location   = google_artifact_registry_repository.museum_repo.location
+  repository = google_artifact_registry_repository.museum_repo.name
+  role       = "roles/artifactregistry.writer"
+  member     = "serviceAccount:terraform-sa@${var.project_id}.iam.gserviceaccount.com"
 }
 
 # --- Secret Manager ---
@@ -146,7 +164,14 @@ resource "google_cloud_run_v2_service" "museum" {
 
     containers {
       image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.ghcr_proxy.repository_id}/ente-io/server:latest"
-      
+
+      resources {
+        limits = {
+          cpu    = "1000m"
+          memory = "512Mi"
+        }
+      }
+
       ports {
         container_port = 8080
       }
