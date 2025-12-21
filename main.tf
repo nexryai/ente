@@ -10,6 +10,17 @@ terraform {
   }
 }
 
+resource "google_service_account" "terraform_sa" {
+  account_id   = "terraform-sa"
+  display_name = "Terraform Execution Service Account"
+}
+
+resource "google_project_iam_member" "terraform_sa_admin" {
+  project = var.project_id
+  role    = "roles/editor"
+  member  = "serviceAccount:${google_service_account.terraform_sa.email}"
+}
+
 # --- Workload Identity Federation (GitHub Actions 用) ---
 resource "google_iam_workload_identity_pool" "github_pool" {
   workload_identity_pool_id = "github-pool"
