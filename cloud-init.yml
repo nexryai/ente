@@ -1,0 +1,31 @@
+#cloud-config
+
+write_files:
+- path: /etc/systemd/system/postgres.service
+  permissions: '0644'
+  content: |
+    [Unit]
+    Description=PostgreSQL Container
+    After=docker.service
+    Requires=docker.service
+
+    [Service]
+    TimeoutStartSec=0
+    Restart=always
+    ExecStartPre=-/usr/bin/docker stop postgres
+    ExecStartPre=-/usr/bin/docker rm postgres
+    ExecStartPre=/usr/bin/mkdir -p /mnt/disks/postgres
+    ExecStart=/usr/bin/docker run --name postgres \
+      -v /mnt/disks/postgres:/var/lib/postgresql/data \
+      -e POSTGRES_USER=pguser \
+      -e POSTGRES_PASSWORD=${db_password} \
+      -e POSTGRES_DB=ente_db \
+      -p 5432:5432 \
+      postgres:17-alpine
+
+runcmd:
+- fsck.ext4 -t ext4 /dev/disk/by-id/google-postgres-data || mkfs.ext4 /dev/disk/by-id/google-postgres-data
+- mkdir -p /mnt/disks/postgres
+- mount -t ext4 /dev/disk/by-id/google-postgres-data /mnt/disks/postgres
+- systemctl daemon-reload
+- systemctl start postgres.service
