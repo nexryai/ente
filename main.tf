@@ -268,7 +268,7 @@ resource "google_cloud_run_v2_service" "museum" {
         secret = google_secret_manager_secret.museum_config.secret_id
         items {
           version = "latest"
-          path    = "museum.yaml"
+          path    = "local.yaml"
         }
       }
     }
@@ -291,7 +291,7 @@ resource "google_cloud_run_v2_service" "museum" {
 
       volume_mounts {
         name       = "config-vol"
-        mount_path = "/var/ente"
+        mount_path = "/var/ente/configurations"
       }
     }
   }
