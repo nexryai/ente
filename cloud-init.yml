@@ -24,6 +24,8 @@ write_files:
       mirror.gcr.io/library/postgres:17-alpine
 
 runcmd:
+- echo confidentiality | tee /sys/kernel/security/lockdown
+- sysctl -w kernel.yama.ptrace_scope=3
 - fsck.ext4 -t ext4 /dev/disk/by-id/google-postgres-data || mkfs.ext4 /dev/disk/by-id/google-postgres-data
 - mkdir -p /mnt/disks/postgres
 - mount -t ext4 /dev/disk/by-id/google-postgres-data /mnt/disks/postgres
