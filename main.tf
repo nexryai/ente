@@ -87,12 +87,11 @@ resource "google_compute_subnetwork" "subnet" {
   region        = var.region
 }
 
-# Artifact Registry
+# --- Artifact Registry ---
 resource "google_artifact_registry_repository" "museum_repo" {
   location      = var.region
   repository_id = "museum-repo"
   format        = "DOCKER"
-  mode          = "STANDARD"
 
   cleanup_policies {
     id     = "keep-latest-only"
