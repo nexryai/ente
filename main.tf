@@ -95,18 +95,18 @@ resource "google_artifact_registry_repository" "museum_repo" {
   format        = "DOCKER"
 
   cleanup_policies {
-    id     = "keep-latest-only"
+    id     = "keep-minimum-versions"
     action = "KEEP"
     most_recent_versions {
-      keep_count = 1
+      keep_count = 2
     }
   }
 
   cleanup_policies {
-    id     = "delete-old-images"
+    id     = "delete-unprotected-images"
     action = "DELETE"
     condition {
-      tag_state = "ANY"
+      older_than = "0s"
     }
   }
 }
@@ -275,7 +275,7 @@ resource "google_cloud_run_v2_service" "museum" {
 
     containers {
       # image = "us-docker.pkg.dev/cloudrun/container/hello:latest"
-      image = "${var.region}-docker.pkg.dev/${var.project_id}/museum-repo/museum-server:latest"
+      image = var.image_url
 
       resources {
         limits = {
