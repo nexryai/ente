@@ -174,7 +174,7 @@ resource "google_cloud_run_v2_service" "museum" {
 
       resources {
         limits = {
-          cpu    = "1000m"
+          cpu    = "1"
           memory = "512Mi"
         }
       }
