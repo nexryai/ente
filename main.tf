@@ -243,7 +243,8 @@ resource "google_cloud_run_v2_service" "museum" {
     }
 
     containers {
-      image = "${var.region}-docker.pkg.dev/${var.project_id}/museum-repo/museum-server:latest"
+      image = "us-docker.pkg.dev/cloudrun/container/hello:latest"
+      # image = "${var.region}-docker.pkg.dev/${var.project_id}/museum-repo/museum-server:latest"
 
       resources {
         limits = {
