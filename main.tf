@@ -170,7 +170,7 @@ resource "google_cloud_run_v2_service" "museum" {
     }
 
     containers {
-      image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.ghcr_proxy.repository_id}/ente-io/server:latest"
+      image = "us-west1-docker.pkg.dev/${var.project_id}/museum-repo/museum-server:latest"
 
       resources {
         limits = {
