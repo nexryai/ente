@@ -268,7 +268,7 @@ resource "google_cloud_run_v2_service" "museum" {
         secret = google_secret_manager_secret.museum_config.secret_id
         items {
           version = "latest"
-          path    = "local.yaml"
+          path    = "production.yaml"
         }
       }
     }
@@ -276,6 +276,11 @@ resource "google_cloud_run_v2_service" "museum" {
     containers {
       # image = "us-docker.pkg.dev/cloudrun/container/hello:latest"
       image = var.image_url
+
+      env {
+        name  = "ENVIRONMENT"
+        value = "production"
+      }
 
       resources {
         limits = {
