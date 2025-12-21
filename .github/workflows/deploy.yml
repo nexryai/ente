@@ -1,0 +1,32 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: 'projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+          service_account: 'terraform-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com'
+
+      - name: Docker Auth
+        run: |
+          gcloud auth configure-docker us-west1-docker.pkg.dev
+
+      - name: Build and Push
+        run: |
+          IMAGE_NAME="us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/museum-repo/museum-server:latest"
+          docker build -t $IMAGE_NAME .
+          docker push $IMAGE_NAME
+
+      - name: Terraform Apply
+        run: |
+          terraform init
+          terraform apply -auto-approve -var="project_id=${{ secrets.GCP_PROJECT_ID }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -var="github_repo=${{ github.repository }}"
