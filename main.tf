@@ -29,7 +29,7 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
   }
- 　attribute_condition = "attribute.repository == '${var.github_repo}'"
+  attribute_condition = "attribute.repository == '${var.github_repo}'"
 }
 
 resource "google_service_account_iam_member" "terraform_sa_workload_identity" {
@@ -116,7 +116,13 @@ resource "google_artifact_registry_repository_iam_member" "pusher" {
 # --- Secret Manager ---
 resource "google_secret_manager_secret" "db_password" {
   secret_id = "ente-db-password"
-  replication { auto {} }
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+      }
+    }
+  }
 }
 
 resource "google_secret_manager_secret_version" "db_password_v" {
@@ -126,7 +132,13 @@ resource "google_secret_manager_secret_version" "db_password_v" {
 
 resource "google_secret_manager_secret" "museum_config" {
   secret_id = "museum-yaml-config"
-  replication { auto {} }
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+      }
+    }
+  }
 }
 
 # --- Compute Engine (PostgreSQL) ---
