@@ -5,12 +5,12 @@ provider "google" {
 
 terraform {
   backend "gcs" {
-    bucket  = "ente-terraform-state"
-    prefix  = "terraform/state"
+    bucket = "ente-terraform-state"
+    prefix = "terraform/state"
   }
 }
 
-# --- Workload Identity Federation ---
+# --- Workload Identity Federation (GitHub Actions 用) ---
 resource "google_iam_workload_identity_pool" "github_pool" {
   workload_identity_pool_id = "github-pool"
   display_name              = "GitHub Actions Pool"
@@ -76,13 +76,7 @@ resource "google_compute_subnetwork" "subnet" {
   region        = var.region
 }
 
-resource "google_vpc_access_connector" "connector" {
-  name          = "ente-run-conn"
-  region        = var.region
-  ip_cidr_range = "10.8.0.0/28"
-  network       = google_compute_network.vpc.name
-}
-
+# Artifact Registry
 resource "google_artifact_registry_repository" "museum_repo" {
   location      = var.region
   repository_id = "museum-repo"
@@ -93,7 +87,7 @@ resource "google_artifact_registry_repository" "museum_repo" {
     id     = "keep-latest-only"
     action = "KEEP"
     most_recent_versions {
-      keep_count = 1 # 最新の1件のみ残す
+      keep_count = 1
     }
   }
 
@@ -196,7 +190,8 @@ resource "google_compute_firewall" "allow_postgres" {
     protocol = "tcp"
     ports    = ["5432"]
   }
-  source_ranges = ["10.8.0.0/28"]
+  # Subnet 帯域からのみ許可
+  source_ranges = [google_compute_subnetwork.subnet.ip_cidr_range]
 }
 
 # --- Cloud Run (Museum) ---
@@ -219,8 +214,11 @@ resource "google_cloud_run_v2_service" "museum" {
     service_account = google_service_account.run_sa.email
 
     vpc_access {
-      connector = google_vpc_access_connector.connector.id
-      egress    = "ALL_TRAFFIC"
+      egress = "ALL_TRAFFIC"
+      network_interfaces {
+        network    = google_compute_network.vpc.id
+        subnetwork = google_compute_subnetwork.subnet.id
+      }
     }
 
     volumes {
