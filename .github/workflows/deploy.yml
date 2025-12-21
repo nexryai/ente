@@ -30,6 +30,8 @@ jobs:
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
 
+      - uses: hashicorp/setup-terraform@v3
+
       - name: Terraform Apply
         run: |
           terraform init
