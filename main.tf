@@ -288,11 +288,6 @@ resource "google_cloud_run_v2_service" "museum" {
       # image = "us-docker.pkg.dev/cloudrun/container/hello:latest"
       image = var.image_url
 
-      env {
-        name  = "ENVIRONMENT"
-        value = "production"
-      }
-
       resources {
         limits = {
           cpu    = "1"
