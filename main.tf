@@ -225,10 +225,11 @@ resource "google_service_account" "run_sa" {
 }
 
 resource "google_cloud_run_v2_service_iam_member" "noauth" {
-  location = google_cloud_run_v2_service.museum.location
-  name     = google_cloud_run_v2_service.museum.name
-  role     = "roles/run.invoker"
-  member   = "allUsers"
+  location   = google_cloud_run_v2_service.museum.location
+  name       = google_cloud_run_v2_service.museum.name
+  role       = "roles/run.invoker"
+  member     = "allUsers"
+  depends_on = [google_cloud_run_v2_service.museum]
 }
 
 resource "google_secret_manager_secret_iam_member" "run_secret_access" {
