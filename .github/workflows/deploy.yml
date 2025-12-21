@@ -20,19 +20,20 @@ jobs:
           workload_identity_provider: 'projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
           service_account: 'terraform-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com'
 
-      - name: Docker Auth
-        run: |
-          gcloud auth configure-docker us-west1-docker.pkg.dev
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
 
-      - name: Build and Push
+      - name: Build and Push Container
+        env:
+          IMAGE_TAG: us-west1-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/museum-repo/museum-server:${{ github.sha }}
         run: |
-          IMAGE_NAME="us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/museum-repo/museum-server:latest"
-          docker build -t $IMAGE_NAME .
-          docker push $IMAGE_NAME
+          docker build -t $IMAGE_TAG .
+          docker push $IMAGE_TAG
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Apply
         run: |
           terraform init
-          terraform apply -auto-approve -var="project_id=${{ secrets.GCP_PROJECT_ID }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -var="github_repo=${{ github.repository }}"
+          terraform apply -auto-approve -var="project_id=${{ secrets.GCP_PROJECT_ID }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -var="github_repo=${{ github.repository }}" -var="image_url=${{ env.IMAGE_TAG }}"
