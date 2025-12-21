@@ -3,6 +3,13 @@ provider "google" {
   region  = var.region
 }
 
+terraform {
+  backend "gcs" {
+    bucket  = "ente-terraform-state"
+    prefix  = "terraform/state"
+  }
+}
+
 # --- ネットワーク構成 ---
 resource "google_compute_network" "vpc" {
   name                    = "ente-vpc"
