@@ -146,6 +146,17 @@ resource "google_secret_manager_secret" "museum_config" {
   }
 }
 
+resource "google_secret_manager_secret" "museum_config_default" {
+  secret_id = "museum-yaml-config-default"
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+      }
+    }
+  }
+}
+
 # --- Compute Engine (PostgreSQL) ---
 resource "google_service_account" "gce_sa" {
   account_id   = "ente-db-sa"
@@ -296,8 +307,7 @@ resource "google_cloud_run_v2_service" "museum" {
 
       volume_mounts {
         name       = "config-vol"
-        mount_path = "/configurations/production.yaml"
-        sub_path   = "production.yaml"
+        mount_path = "/var/config"
       }
     }
   }
