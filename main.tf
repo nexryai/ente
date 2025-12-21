@@ -222,8 +222,7 @@ resource "google_cloud_run_v2_service" "museum" {
   location = var.region
 
   depends_on = [
-    google_secret_manager_secret_iam_member.run_secret_access,
-    google_secret_manager_secret_version.museum_config_v
+    google_secret_manager_secret_iam_member.run_secret_access
   ]
 
   template {
