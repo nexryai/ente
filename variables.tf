@@ -14,3 +14,8 @@ variable "region" {
 variable "zone" {
   default = "us-west1-a"
 }
+
+variable "github_repo" {
+  description = "GitHub Repository (username/reponame)"
+  type        = string
+}
