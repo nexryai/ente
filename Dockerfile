@@ -1,7 +1,7 @@
 FROM ghcr.io/ente-io/server:latest
 
 RUN apk add --no-cache su-exec
-RUN echo '#!/bin/sh\n\
+RUN printf '#!/bin/sh\n\
 cd /\n\
 ls \n\
 cp /var/config/production.yaml /museum.yaml\n\
