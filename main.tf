@@ -10,6 +10,59 @@ terraform {
   }
 }
 
+# --- Workload Identity Federation ---
+resource "google_iam_workload_identity_pool" "github_pool" {
+  workload_identity_pool_id = "github-pool"
+  display_name              = "GitHub Actions Pool"
+  description               = "Identity pool for GitHub Actions deployment"
+}
+
+resource "google_iam_workload_identity_pool_provider" "github_provider" {
+  workload_identity_pool_id          = google_iam_workload_identity_pool.github_pool.workload_identity_pool_id
+  workload_identity_pool_provider_id = "github-provider"
+  attribute_mapping = {
+    "google.subject"             = "assertion.sub"
+    "attribute.actor"            = "assertion.actor"
+    "attribute.repository"       = "assertion.repository"
+    "attribute.repository_owner" = "assertion.repository_owner"
+  }
+  oidc {
+    issuer_uri = "https://token.actions.githubusercontent.com"
+  }
+ 　attribute_condition = "attribute.repository == '${var.github_repo}'"
+}
+
+resource "google_service_account_iam_member" "terraform_sa_workload_identity" {
+  service_account_id = "projects/${var.project_id}/serviceAccounts/terraform-sa@${var.project_id}.iam.gserviceaccount.com"
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${var.github_repo}"
+}
+
+# --- IAMポリシー ---
+resource "google_service_account_iam_member" "sa_user_museum" {
+  service_account_id = google_service_account.run_sa.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:terraform-sa@${var.project_id}.iam.gserviceaccount.com"
+}
+
+resource "google_service_account_iam_member" "sa_user_gce" {
+  service_account_id = google_service_account.gce_sa.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:terraform-sa@${var.project_id}.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "run_secret_accessor" {
+  project = var.project_id
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${google_service_account.run_sa.email}"
+}
+
+resource "google_project_iam_member" "gce_secret_accessor" {
+  project = var.project_id
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${google_service_account.gce_sa.email}"
+}
+
 # --- ネットワーク構成 ---
 resource "google_compute_network" "vpc" {
   name                    = "ente-vpc"
