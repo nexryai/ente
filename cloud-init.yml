@@ -21,7 +21,7 @@ write_files:
       -e POSTGRES_PASSWORD=${db_password} \
       -e POSTGRES_DB=ente_db \
       -p 5432:5432 \
-      postgres:17-alpine
+      mirror.gcr.io/library/postgres:17-alpine
 
 runcmd:
 - fsck.ext4 -t ext4 /dev/disk/by-id/google-postgres-data || mkfs.ext4 /dev/disk/by-id/google-postgres-data
