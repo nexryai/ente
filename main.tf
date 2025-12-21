@@ -221,6 +221,11 @@ resource "google_cloud_run_v2_service" "museum" {
   deletion_protection = false
   location = var.region
 
+  depends_on = [
+    google_secret_manager_secret_iam_member.run_secret_access,
+    google_secret_manager_secret_version.museum_config_v
+  ]
+
   template {
     service_account = google_service_account.run_sa.email
 
