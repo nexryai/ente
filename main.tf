@@ -218,6 +218,7 @@ resource "google_secret_manager_secret_iam_member" "run_secret_access" {
 
 resource "google_cloud_run_v2_service" "museum" {
   name     = "museum-server"
+  deletion_protection = false
   location = var.region
 
   template {
