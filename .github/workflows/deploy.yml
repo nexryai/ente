@@ -25,7 +25,7 @@ jobs:
 
       - name: Build and Push Container
         env:
-          IMAGE_TAG: us-west1-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/museum-repo/museum-server:${{ github.sha }}
+          IMAGE_TAG: us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/museum-repo/museum-server:${{ github.sha }}
         run: |
           docker build -t $IMAGE_TAG .
           docker push $IMAGE_TAG
