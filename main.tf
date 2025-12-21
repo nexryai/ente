@@ -255,7 +255,7 @@ resource "google_cloud_run_v2_service" "museum" {
     }
 
     vpc_access {
-      egress = "ALL_TRAFFIC"
+      egress = "PRIVATE_RANGES_ONLY"
       network_interfaces {
         network    = google_compute_network.vpc.id
         subnetwork = google_compute_subnetwork.subnet.id
