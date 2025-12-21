@@ -291,7 +291,7 @@ resource "google_cloud_run_v2_service" "museum" {
 
       volume_mounts {
         name       = "config-vol"
-        mount_path = "/var/ente/configurations"
+        mount_path = "/configurations"
       }
     }
   }
