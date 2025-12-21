@@ -19,3 +19,9 @@ variable "github_repo" {
   description = "GitHub Repository (username/reponame)"
   type        = string
 }
+
+variable "image_url" {
+  description = "Container image URL for Cloud Run"
+  type        = string
+  default     = "us-docker.pkg.dev/cloudrun/container/hello"
+}
