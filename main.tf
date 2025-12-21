@@ -224,6 +224,13 @@ resource "google_service_account" "run_sa" {
   display_name = "Service Account for Museum Cloud Run"
 }
 
+resource "google_cloud_run_v2_service_iam_member" "noauth" {
+  location = google_cloud_run_v2_service.museum.location
+  name     = google_cloud_run_v2_service.museum.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
 resource "google_secret_manager_secret_iam_member" "run_secret_access" {
   secret_id = google_secret_manager_secret.museum_config.id
   role      = "roles/secretmanager.secretAccessor"
@@ -241,6 +248,10 @@ resource "google_cloud_run_v2_service" "museum" {
 
   template {
     service_account = google_service_account.run_sa.email
+
+    scaling {
+      max_instance_count = 1
+    }
 
     vpc_access {
       egress = "ALL_TRAFFIC"
@@ -270,6 +281,7 @@ resource "google_cloud_run_v2_service" "museum" {
           cpu    = "1"
           memory = "512Mi"
         }
+        cpu_idle = true
       }
 
       ports {
