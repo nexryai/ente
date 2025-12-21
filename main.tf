@@ -146,17 +146,6 @@ resource "google_secret_manager_secret" "museum_config" {
   }
 }
 
-resource "google_secret_manager_secret" "museum_config_default" {
-  secret_id = "museum-yaml-config-default"
-  replication {
-    user_managed {
-      replicas {
-        location = var.region
-      }
-    }
-  }
-}
-
 # --- Compute Engine (PostgreSQL) ---
 resource "google_service_account" "gce_sa" {
   account_id   = "ente-db-sa"
