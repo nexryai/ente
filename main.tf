@@ -235,6 +235,13 @@ resource "google_compute_firewall" "allow_ssh_iap" {
   source_ranges = ["35.235.240.0/20"]
 }
 
+# --- DBが起動するまでしばらく待機 ---
+resource "time_sleep" "wait_3_minutes" {
+  depends_on = [google_compute_instance.db_server]
+
+  create_duration = "180s"
+}
+
 # --- Cloud Run (Museum) ---
 resource "google_service_account" "run_sa" {
   account_id   = "ente-museum-sa"
@@ -261,7 +268,8 @@ resource "google_cloud_run_v2_service" "museum" {
   location = var.region
 
   depends_on = [
-    google_secret_manager_secret_iam_member.run_secret_access
+    google_secret_manager_secret_iam_member.run_secret_access,
+    time_sleep.wait_3_minutes
   ]
 
   template {
