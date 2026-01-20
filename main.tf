@@ -146,6 +146,16 @@ resource "google_secret_manager_secret" "museum_config" {
   }
 }
 
+# 最新の COS Stable イメージ情報を取得
+data "google_compute_image" "cos_latest" {
+  family  = "cos-stable"
+  project = "cos-cloud"
+}
+
+resource "terraform_data" "force_update" {
+  input = timestamp()
+}
+
 # --- Compute Engine (PostgreSQL) ---
 resource "google_service_account" "gce_sa" {
   account_id   = "ente-db-sa"
@@ -166,7 +176,7 @@ resource "google_compute_instance" "db_server" {
 
   boot_disk {
     initialize_params {
-      image = "cos-cloud/cos-stable"
+      image = data.google_compute_image.cos_latest.self_link
       size  = 10
     }
   }
@@ -191,6 +201,13 @@ resource "google_compute_instance" "db_server" {
   service_account {
     email  = google_service_account.gce_sa.email
     scopes = ["cloud-platform"]
+  }
+
+  # Apply のたびに強制的にインスタンスを再作成させる
+  lifecycle {
+    replace_triggered_by = [
+      terraform_data.force_update
+    ]
   }
 }
 
