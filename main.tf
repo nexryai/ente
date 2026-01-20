@@ -174,6 +174,12 @@ resource "google_compute_instance" "db_server" {
   machine_type = "e2-micro"
   zone         = var.zone
 
+  shielded_instance_config {
+    enable_secure_boot          = true
+    enable_vtpm                 = true
+    enable_integrity_monitoring = true
+  }
+
   boot_disk {
     initialize_params {
       image = data.google_compute_image.cos_latest.self_link
